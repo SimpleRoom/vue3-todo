@@ -11,25 +11,42 @@
           :id="item.id"
           :checked="item.status"
           @change="switchHandle($event, item)">
-        <span class="row-text">{{ item.text }}</span>
-        <span class="delete-btn" @click="deleteHandle(index)">✖</span>
+        <div class="row-show">
+          <span class="row-text" @dblclick="switchEditorHandle(item)">{{ item.text }}</span>
+          <input
+            type="text"
+            class="row-editor-input"
+            v-if="item.isEditor"
+            v-model="item.text"
+            ref="editorInputRef"
+            :id="`focusElem${item.id}`"
+            :data-default="item.defaultText"
+            @focus="focusHandle"
+            @blur="blurHandler($event, item)"
+            @keyup="enterHandle($event, item)" />
+          <span v-if="!item.isEditor" class="delete-btn" @click="deleteHandle(index)">✖</span>
+        </div>
     </div>
     <div className="counts-status">
-        <span class="finished-count">{{ filterHandle(todoEr.list).finishedDesc }}</span>
-        <span class="left-count">{{ filterHandle(todoEr.list).leftDesc }}</span>
-        <span class="total-count">{{ filterHandle(todoEr.list).allDesc }}</span>
+      <span class="finished-count">{{ filterHandle(todoEr.list).finishedDesc }}</span>
+      <span class="left-count">{{ filterHandle(todoEr.list).leftDesc }}</span>
+      <span class="total-count">{{ filterHandle(todoEr.list).allDesc }}</span>
     </div>
   </div>
 </template>
 <script>
-import { defineComponent } from 'vue'
+import { ref, defineComponent, nextTick } from 'vue'
 import { useTodoStore } from '../stores/todo'
 export default defineComponent({
   setup() {
+    // 用于控制enter和blur事件叠加
+    const isFocus = ref(false)
+    const editorInputRef = ref()
     const todoEr = useTodoStore()
     const deleteHandle = (index) => {
       todoEr.deleteItem(index)
     }
+    // 切换选中
     const switchHandle = ($event, item) => {
       const { target } = $event
       const curState = (target && target.checked) ? 1 : 0
@@ -42,26 +59,82 @@ export default defineComponent({
         todoEr.updateItem(newItem)
       }
     }
+    // 底部完成和未完成数量统计
     const filterHandle = (list) => {
+      let todoInfo = {
+        finishedDesc: 'Completed: 0',
+        leftDesc: '0 Matter left',
+        allDesc: '0 Matter'
+      }
       if (list && list.length) {
         const allCount = list.length
         const finishedList = list.filter(item => item.status)
         const unFinishedList = list.filter(item => !item.status)
-        const finishedDesc = 'Completed: ' + finishedList.length
-        const leftDesc = unFinishedList.length > 1 ? unFinishedList.length + ' Matters left' : unFinishedList.length + 'Matter left'
-        const allDesc = allCount > 1 ? allCount + ' Matters' : allCount + 'Matter'
-        return {
-          finishedDesc,
-          leftDesc,
-          allDesc
-        }
+        todoInfo.finishedDesc = 'Completed: ' + finishedList.length
+        todoInfo.leftDesc = unFinishedList.length > 1 ? unFinishedList.length + ' Matters left' : unFinishedList.length + ' Matter left'
+        todoInfo.allDesc = allCount > 1 ? allCount + ' Matters' : allCount + ' Matter'
+      }
+      return todoInfo
+    }
+    // 双击切换为编辑状态
+    const switchEditorHandle = (curItem) => {
+      const { id } = curItem
+      const editorItem = {
+        ...curItem,
+        isEditor: true
+      }
+      todoEr.updateItem(editorItem)
+      nextTick(()=> {
+        const focusElem = document.getElementById(`focusElem${id}`)
+        focusElem && focusElem.focus()
+      })
+    }
+    // 确定修改更新
+    const confirmHandle = ($event, item) => {
+      const { target } = $event
+      let defaultText = ''
+      if (target) defaultText = target.getAttribute('data-default')
+      const newItem = {
+        ...item,
+        isEditor: false
+      }
+      if (target.value != defaultText) {
+        newItem['text'] = target.value
+      }
+      todoEr.updateItem(newItem)
+    }
+    // 编辑时enter的保存，可能会和blur事件冲突
+    const enterHandle = ($event, item) => {
+      const { keyCode } = $event
+      if (keyCode === 13) {
+        // 限制失去事件
+        isFocus.value = false
+        console.log('enter_update')
+        confirmHandle($event, item)
+      }
+    }
+    // 获取焦点
+    const focusHandle = () => {
+      isFocus.value = true
+    }
+    // 失去焦点注意和enter事件重叠
+    const blurHandler = ($event, item) => {
+      if (isFocus.value) {
+        console.log('blue_update')
+        confirmHandle($event, item)
       }
     }
     return {
       todoEr,
+      editorInputRef,
+      isFocus,
       deleteHandle,
       switchHandle,
-      filterHandle
+      filterHandle,
+      switchEditorHandle,
+      enterHandle,
+      focusHandle,
+      blurHandler
     }
   },
   // filters: {
@@ -78,11 +151,22 @@ export default defineComponent({
   margin-top: 10px;
 }
 .item-row {
-  height: 32px;
-  line-height: 32px;
+  height: 36px;
+  line-height: 36px;
   position: relative;
   cursor: pointer;
   border-bottom: 1px dashed #f0f0f0;
+  display: flex;
+  align-items: center;
+}
+.row-show {
+  position: relative;
+  flex-grow: 1;
+  height: 100%;
+}
+.row-text {
+  display: inline-block;
+  width: 100%;
 }
 .row-checkbox {
   position: relative;
@@ -95,7 +179,7 @@ export default defineComponent({
   appearance: none;
   display: inline-block;
   vertical-align: middle;
-  margin-right: 5px;
+  margin-right: 6px;
 }
 .row-checkbox:before {
   content: "\2714";
@@ -147,5 +231,25 @@ export default defineComponent({
 }
 .counts-status span+span {
   margin-left: 15px;
+}
+
+
+.row-editor-input {
+  position: absolute;
+  width: 94%;
+  left: 0;
+  top: 0;
+  height: 100%;
+  outline: none;
+  border: 1px solid #8ac007;
+  color: #8ac007;
+  transition: all .3s ease-in-out;
+  padding-left: 8px;
+}
+.row-editor-input:focus{
+  box-shadow: 0 0 5px #8ac007;
+}
+.row-text.editoring+.row-editor-input {
+  display: block;
 }
 </style>

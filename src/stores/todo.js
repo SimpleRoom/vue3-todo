@@ -9,7 +9,9 @@ export const useTodoStore = defineStore('todo', () => {
     const newItem = {
       id: Math.random().toString(36).slice(2),
       text: newText,
-      status: 0
+      defaultText: newText,
+      status: 0,
+      isEditor: true
     }
     list.value.push(newItem)
     Storage.save(list.value)
