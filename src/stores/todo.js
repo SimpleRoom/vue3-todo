@@ -11,7 +11,7 @@ export const useTodoStore = defineStore('todo', () => {
       text: newText,
       defaultText: newText,
       status: 0,
-      isEditor: true
+      isEditor: false
     }
     list.value.push(newItem)
     Storage.save(list.value)

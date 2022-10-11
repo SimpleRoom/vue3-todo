@@ -193,7 +193,7 @@ export default defineComponent({
   color: #38b9b9;
   text-shadow: 0 1px 0 #669991;
 }
-.row-checkbox:checked + span {
+.row-checkbox:checked + .row-show .row-text {
   color: #e4393c;
   text-decoration: line-through;
 }
