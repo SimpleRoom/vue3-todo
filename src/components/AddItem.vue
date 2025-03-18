@@ -1,10 +1,6 @@
 <template>
   <div class="add-wrap">
-    <input
-      v-model="typeText"
-      type="text"
-      ref="inputRef"
-      @keyup="addHandle" />
+    <input v-model="typeText" type="text" ref="inputRef" @keyup="addHandle" />
   </div>
 </template>
 <script>
@@ -12,6 +8,7 @@ import { ref, defineComponent } from 'vue'
 import { useTodoStore } from '../stores/todo'
 export default defineComponent({
   setup(props) {
+    console.log(props)
     const inputRef = ref()
     const typeText = ref('')
     const todoEr = useTodoStore()
@@ -40,9 +37,10 @@ export default defineComponent({
   width: 100%;
   padding: 10px;
   border: 1px solid #999;
-  font-size: .35rem;
+  /* font-size: .35rem; */
   transition: all .3s ease-in-out;
 }
+
 .add-wrap input:focus {
   box-shadow: 0 0 10px #999;
 }

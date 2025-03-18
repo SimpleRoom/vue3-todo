@@ -1,26 +1,35 @@
-@import "./base.css";
+@import './base.css';
 
 #app {
   max-width: 1280px;
   margin: 0 auto;
+  padding: 2rem;
   font-weight: normal;
-  padding-top: 60px;
 }
 
-body {
-  background: url('./bg.png');
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
 }
-.main {
-  width: 480px;
-  margin: 0 auto;
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
 }
-.btn {
-  padding: 0 10px;
-  height: 24px;
-  line-height: 24px;
-  border: none;
-  background: navajowhite;
-}
-button:hover {
-  cursor: pointer;
-}
+
+/* @media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+} */

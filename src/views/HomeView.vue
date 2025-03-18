@@ -1,19 +1,19 @@
+<script setup>
+// import TheWelcome from '../components/TheWelcome.vue'
+import AddItem from "../components/AddItem.vue";
+import ItemList from "../components/ItemList.vue";
+</script>
+
 <template>
-  <main data-key="MAIN_WRAP" class="main  ">
+  <main data-key="MAIN_WRAP" class="main">
     <div class="todo-wrap">
       <h3 class="title">vue3 todo</h3>
-      <AddItem />
+      <AddItem :arr="[1, 2, 3, 4]" />
       <ItemList />
     </div>
-    
   </main>
 </template>
 
-<script setup>
-import AddItem from '../components/AddItem.vue'
-import ItemList from '../components/ItemList.vue'
-
-</script>
 <style scoped>
 .todo-wrap {
   background-color: #fff;
@@ -22,6 +22,7 @@ import ItemList from '../components/ItemList.vue'
   margin: 0 auto;
   padding: 30px;
 }
+
 .title {
   margin: 0;
   margin-bottom: 10px;
